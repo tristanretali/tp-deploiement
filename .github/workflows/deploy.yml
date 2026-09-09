@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - run: pytest test_app.py -q
+      - run: python -m unittest test_app.py -v
 
   e2e-tests:
     needs: unit-tests
@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - run: pytest test_e2e.py -q
+      - run: python -m unittest test_e2e.py -v
 
   build-and-push:
     needs: [unit-tests, e2e-tests]
