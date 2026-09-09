@@ -23,3 +23,7 @@ Tout part d'un `git push` sur `main`. Pas d'étape manuelle.
 - **Rien en clair dans le repo** : les identifiants Docker Hub et l'accès SSH passent par des GitHub Secrets.
 - **Image simple** : `python:3.12-slim` + `gunicorn` (pas le serveur de dev Flask), port 8080 dans le conteneur mappé sur le port 80 de la VM.
 
+## Preuve de bon fonctionnement
+
+![alt text](img/image.png)
+![alt text](img/image-1.png)
