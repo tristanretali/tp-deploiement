@@ -56,18 +56,17 @@ jobs:
         run: |
           sudo apt-get install -y sshpass
           sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no "$SSH_ADDRESS" bash -s <<EOF
-          cd ~/TR
           echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
           docker pull $DOCKERHUB_USERNAME/tp-deploiement:latest
-          docker stop myapp || true
-          docker rm myapp || true
-          docker run -d --name myapp --restart unless-stopped -p 80:8080 $DOCKERHUB_USERNAME/tp-deploiement:latest
+          docker stop tristanretali-app || true
+          docker rm tristanretali-app || true
+          docker run -d --name tristanretali-app --restart unless-stopped -p 8088:8080 $DOCKERHUB_USERNAME/tp-deploiement:latest
           sleep 3
-          curl -f http://localhost/health
+          curl -f http://localhost:8088/health
           EOF
       - name: Verify the app is reachable via the public IP
         env:
           SSH_ADDRESS: ${{ secrets.SSH_ADDRESS }}
         run: |
           HOST="${SSH_ADDRESS#*@}"
-          curl -f "http://$HOST/health"
+          curl -f --max-time 10 "http://$HOST:8088/health"
