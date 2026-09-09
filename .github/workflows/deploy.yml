@@ -42,3 +42,29 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/tp-deploiement:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/tp-deploiement:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on Azure VM
+        env:
+          SSH_ADDRESS: ${{ secrets.SSH_ADDRESS }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          sudo apt-get install -y sshpass
+          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no "$SSH_ADDRESS" bash -s <<EOF
+          docker pull $DOCKERHUB_USERNAME/tp-deploiement:latest
+          docker stop myapp || true
+          docker rm myapp || true
+          docker run -d --name myapp --restart unless-stopped -p 80:8080 $DOCKERHUB_USERNAME/tp-deploiement:latest
+          sleep 3
+          curl -f http://localhost/health
+          EOF
+      - name: Verify the app is reachable via the public IP
+        env:
+          SSH_ADDRESS: ${{ secrets.SSH_ADDRESS }}
+        run: |
+          HOST="${SSH_ADDRESS#*@}"
+          curl -f "http://$HOST/health"
